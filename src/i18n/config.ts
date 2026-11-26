@@ -7,10 +7,10 @@
  */
 export const locales = [
   { code: 'pl', label: 'PL', name: 'Polski', htmlLang: 'pl', ogLocale: 'pl_PL', enabled: true },
-  { code: 'uk', label: 'UK', name: 'Українська', htmlLang: 'uk', ogLocale: 'uk_UA', enabled: false },
-  { code: 'ru', label: 'RU', name: 'Русский', htmlLang: 'ru', ogLocale: 'ru_RU', enabled: false },
-  { code: 'es', label: 'ES', name: 'Español', htmlLang: 'es', ogLocale: 'es_ES', enabled: false },
-  { code: 'en', label: 'EN', name: 'English', htmlLang: 'en', ogLocale: 'en_GB', enabled: false },
+  { code: 'uk', label: 'UK', name: 'Українська', htmlLang: 'uk', ogLocale: 'uk_UA', enabled: true },
+  { code: 'ru', label: 'RU', name: 'Русский', htmlLang: 'ru', ogLocale: 'ru_RU', enabled: true },
+  { code: 'es', label: 'ES', name: 'Español', htmlLang: 'es', ogLocale: 'es_ES', enabled: true },
+  { code: 'en', label: 'EN', name: 'English', htmlLang: 'en', ogLocale: 'en_GB', enabled: true },
 ] as const;
 
 export type Locale = (typeof locales)[number]['code'];

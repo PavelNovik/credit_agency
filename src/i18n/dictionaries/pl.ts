@@ -22,6 +22,8 @@ export const pl = {
     faq: 'FAQ',
     contact: 'Kontakt',
     cta: 'Umów konsultację',
+    ctaShort: 'Umów konsultację',
+    tagline: 'Finansowanie i nieruchomości',
     menu: 'Menu',
     close: 'Zamknij menu',
     language: 'Wybierz język',
@@ -41,6 +43,8 @@ export const pl = {
     minutes: 'min czytania',
     prototypeBanner:
       'Wersja robocza strony. Fragmenty oznaczone kolorem tła czekają na uzupełnienie i nie są jeszcze danymi.',
+    example: 'Przykład',
+    placeholderHint: 'Do uzupełnienia',
   },
 
   footer: {

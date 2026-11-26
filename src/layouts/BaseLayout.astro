@@ -62,10 +62,28 @@ const jsonLd = {
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    <script is:inline define:vars={{ current: locale }}>
+      // Запоминаем язык, выбранный в переключателе. При заходе на сайт извне
+      // (не переход между страницами) открываем эту же страницу на сохранённом языке.
+      try {
+        var saved = localStorage.getItem('ov-lang');
+        var internal = document.referrer && new URL(document.referrer).origin === location.origin;
+        if (saved && saved !== current && !internal) {
+          document.addEventListener('DOMContentLoaded', function () {
+            var link = document.querySelector('a[data-lang="' + saved + '"]');
+            if (link && link.href !== location.href) location.replace(link.href);
+          });
+        }
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest && e.target.closest('a[data-lang]');
+          if (a) localStorage.setItem('ov-lang', a.getAttribute('data-lang'));
+        });
+      } catch (err) {}
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#main">{t.nav.skip}</a>
-    <div class="proto-banner" role="note">{t.common.prototypeBanner} <span class="ph">Przykład</span></div>
+    <div class="proto-banner" role="note">{t.common.prototypeBanner} <span class="ph">{t.common.example}</span></div>
     <Header locale={locale} current={pageId} alternates={alternates} />
     <main id="main">
       <slot />
