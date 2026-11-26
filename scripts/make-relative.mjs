@@ -30,7 +30,7 @@ for (const file of await walk(src)) {
     await writeFile(dest, html);
   } else if (r.endsWith('.css')) {
     let css = await readFile(file, 'utf8');
-    css = css.replace(/url\(\/_astro\//g, 'url(./');
+    css = css.replace(/url\(\/assets\//g, 'url(./');
     await writeFile(dest, css);
   } else {
     await copyFile(file, dest);
