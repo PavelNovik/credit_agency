@@ -1,0 +1,207 @@
+---
+import { Image } from 'astro:assets';
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { href, blogPostHref } from '../i18n/routes';
+import { site } from '../config/site';
+import { postsFor } from '../lib/blog';
+import photo from '../assets/olena-temp.jpg';
+import ServiceCards from '../components/ServiceCards.astro';
+import Steps from '../components/Steps.astro';
+import FaqList from '../components/FaqList.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const h = t.home;
+const posts = postsFor(locale).slice(0, 3);
+const principleIcons = ['eye', 'compass', 'shield', 'clock'] as const;
+---
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__text">
+      <span class="eyebrow">{h.hero.eyebrow}</span>
+      <h1>{h.hero.title}</h1>
+      <p class="lead">{h.hero.lead}</p>
+      <div class="btn-row">
+        <a class="btn btn--primary" href={`${href('contact', locale)}#formularz`}>{h.hero.ctaPrimary}</a>
+        <a class="btn btn--secondary" href="#uslugi">{h.hero.ctaSecondary}</a>
+      </div>
+      <ul class="hero__meta">
+        <li><Icon name="pin" size={18} /> {t.common.location}</li>
+        <li><Icon name="globe" size={18} /> {t.common.consultationLanguages}</li>
+      </ul>
+    </div>
+
+    <aside class="profile" aria-label={site.name}>
+      <div class="profile__photo">
+        <Image src={photo} alt={site.name} width={220} height={220} loading="eager" />
+      </div>
+      <p class="profile__name">{site.name}</p>
+      <p class="profile__role">{h.hero.cardRole}</p>
+      <p class="profile__langs">{h.hero.cardLanguages}</p>
+      <div class="profile__links">
+        <a href={`${href('contact', locale)}#formularz`}>{h.hero.ctaPrimary}</a>
+        <a href={site.instagram.url} target="_blank" rel="noopener">Instagram</a>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head">
+      <h2>{h.audience.title}</h2>
+      <p>{h.audience.lead}</p>
+    </div>
+    <div class="grid grid--4">
+      {h.audience.items.map((i) => (
+        <div class="card">
+          <h3>{i.title}</h3>
+          <p>{i.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="uslugi">
+  <div class="container">
+    <div class="section__head">
+      <span class="eyebrow">{t.nav.services}</span>
+      <h2>{h.servicesBlock.title}</h2>
+      <p>{h.servicesBlock.lead}</p>
+    </div>
+    <ServiceCards locale={locale} />
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head">
+      <h2>{h.principles.title}</h2>
+    </div>
+    <div class="grid grid--4">
+      {h.principles.items.map((p, i) => (
+        <div class="principle">
+          <div class="card__icon"><Icon name={principleIcons[i]} /></div>
+          <h3>{p.title}</h3>
+          <p>{p.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<section class="section section--dark">
+  <div class="container">
+    <div class="section__head">
+      <h2>{h.process.title}</h2>
+      <p>{h.process.lead}</p>
+    </div>
+    <Steps locale={locale} />
+    <p class="process-link"><a class="link-arrow" href={href('process', locale)}>{h.process.cta}</a></p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container about">
+    <div class="about__photo">
+      <Image src={photo} alt={site.name} width={360} height={360} />
+    </div>
+    <div>
+      <h2>{h.about.title}</h2>
+      <p class="lead">{h.about.text}</p>
+      <p set:html={rich(h.about.textPlaceholder)} />
+      <a class="link-arrow" href={href('about', locale)}>{h.about.cta}</a>
+    </div>
+  </div>
+</section>
+
+{posts.length > 0 && (
+  <section class="section section--sand">
+    <div class="container">
+      <div class="section__head section__head--row">
+        <h2>{h.blog.title}</h2>
+        <a class="link-arrow" href={href('blog', locale)}>{h.blog.cta}</a>
+      </div>
+      <div class="grid grid--3">
+        {posts.map((p) => (
+          <article class="card card--link">
+            <span class="chip">{t.blogPage.categories[p.category]}</span>
+            <h3 style="margin-top: var(--s-4)">{p.title}</h3>
+            <p>{p.description}</p>
+            <a class="link-arrow" href={blogPostHref(locale, p.slug)}>{t.common.readArticle}<span class="visually-hidden">: {p.title}</span></a>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+<section class="section">
+  <div class="container--narrow">
+    <h2>{h.faq.title}</h2>
+    <FaqList items={t.faq.filter((f) => f.home)} />
+    <p style="margin-top: var(--s-5)"><a class="link-arrow" href={href('faq', locale)}>{h.faq.cta}</a></p>
+  </div>
+</section>
+
+<section class="section section--sand" id="formularz">
+  <div class="container contact-home">
+    <div>
+      <h2>{h.contact.title}</h2>
+      <p class="lead">{h.contact.lead}</p>
+      <ul class="contact-home__list">
+        <li><Icon name="pin" size={18} /> {t.common.location}</li>
+        <li><Icon name="globe" size={18} /> {t.common.consultationLanguages}</li>
+      </ul>
+    </div>
+    <div class="card"><ContactForm locale={locale} /></div>
+  </div>
+</section>
+
+<style>
+  .hero { padding-block: clamp(2.5rem, 1rem + 5vw, 5.5rem); }
+  .hero__grid { display: grid; gap: var(--s-7); align-items: center; }
+  @media (min-width: 56rem) { .hero__grid { grid-template-columns: 1.35fr 1fr; } }
+  .hero h1 { max-width: 15ch; }
+  .hero .lead { max-width: 36rem; margin-bottom: var(--s-6); }
+  .hero__meta { list-style: none; padding: 0; margin: var(--s-6) 0 0; display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); color: var(--c-muted); font-size: var(--fs-sm); }
+  .hero__meta li { display: flex; align-items: center; gap: var(--s-2); margin: 0; }
+  .hero__meta :global(svg) { color: var(--c-brown); }
+
+  /* Карточка-профиль — отсылка к Linktree */
+  .profile { background: var(--c-brown); color: var(--c-white); border-radius: 2rem; padding: var(--s-7) var(--s-6) var(--s-6); text-align: center; box-shadow: var(--shadow-md); max-width: 24rem; width: 100%; justify-self: center; }
+  .profile__photo { width: 9.5rem; height: 9.5rem; margin: 0 auto var(--s-4); border-radius: 50%; overflow: hidden; outline: 4px solid rgb(255 255 255 / 0.25); outline-offset: 4px; }
+  .profile__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .profile__name { font-family: var(--font-serif); font-size: 1.625rem; margin: 0 0 var(--s-1); }
+  .profile__role { margin: 0; color: rgb(255 255 255 / 0.88); font-size: var(--fs-sm); }
+  .profile__langs { margin: var(--s-1) 0 var(--s-5); color: var(--c-caramel-light); font-size: var(--fs-sm); }
+  .profile__links { display: grid; gap: var(--s-3); }
+  .profile__links a { display: block; padding: 0.85rem 1rem; border-radius: var(--r-pill); background: var(--c-caramel); color: var(--c-white); text-decoration: none; font-weight: 600; font-size: var(--fs-sm); transition: background-color 0.2s; }
+  .profile__links a:hover { background: #b08d6b; }
+  .profile__links a:first-child { background: var(--c-white); color: var(--c-graphite); }
+  .profile__links a:first-child:hover { background: var(--c-caramel-light); }
+
+  .principle h3 { font-size: var(--fs-lg); margin-bottom: var(--s-2); }
+  .principle p { color: var(--c-muted); margin: 0; }
+  .process-link { margin: var(--s-7) 0 0; }
+  .process-link a { color: var(--c-white); }
+
+  .about { display: grid; gap: var(--s-7); align-items: center; }
+  @media (min-width: 48rem) { .about { grid-template-columns: 20rem 1fr; } }
+  .about__photo { border-radius: 50%; overflow: hidden; aspect-ratio: 1; max-width: 20rem; width: 100%; justify-self: center; background: var(--c-caramel-light); }
+  .about__photo :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .section__head--row { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: var(--s-4); max-width: none; }
+  .section__head--row h2 { margin: 0; }
+
+  .contact-home { display: grid; gap: var(--s-7); align-items: start; }
+  @media (min-width: 60rem) { .contact-home { grid-template-columns: 1fr 1.5fr; } }
+  .contact-home__list { list-style: none; padding: 0; color: var(--c-muted); }
+  .contact-home__list li { display: flex; gap: var(--s-2); align-items: center; }
+  .contact-home__list :global(svg) { color: var(--c-brown); }
+</style>

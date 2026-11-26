@@ -1,0 +1,79 @@
+---
+import '@fontsource-variable/manrope';
+import '@fontsource/lora/500.css';
+import '@fontsource/lora/500-italic.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { defaultLocale, localeInfo, enabledLocales, type Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import type { PageId } from '../i18n/routes';
+import { site } from '../config/site';
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  pageId?: PageId;
+  /** Адреса этой же страницы на других языках (от корня). */
+  alternates: Partial<Record<Locale, string>>;
+  ogType?: 'website' | 'article';
+  noindex?: boolean;
+}
+const { locale, title, description, pageId, alternates, ogType = 'website', noindex = false } = Astro.props;
+const t = getDictionary(locale);
+const info = localeInfo(locale);
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const abs = (p: string) => new URL(p, Astro.site).href;
+const ogImage = abs('/og-default.jpg');
+const hreflangs = enabledLocales.filter((l) => alternates[l]).map((l) => ({ lang: localeInfo(l).htmlLang, href: abs(alternates[l]!) }));
+const xDefault = alternates[defaultLocale] ? abs(alternates[defaultLocale]!) : undefined;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfessionalService',
+  name: site.brand,
+  description: t.meta.defaultDescription,
+  url: abs(alternates[defaultLocale] ?? '/'),
+  areaServed: [{ '@type': 'City', name: 'Poznań' }, { '@type': 'Country', name: 'Polska' }],
+  availableLanguage: site.consultationLanguages.map((l) => localeInfo(l).name),
+  sameAs: [site.instagram.url, site.linktree],
+};
+---
+<!doctype html>
+<html lang={info.htmlLang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {hreflangs.map((h) => <link rel="alternate" hreflang={h.lang} href={h.href} />)}
+    {xDefault && <link rel="alternate" hreflang="x-default" href={xDefault} />}
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={t.meta.siteName} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:locale" content={info.ogLocale} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#FBF8F5" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="sitemap" href="/sitemap.xml" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{t.nav.skip}</a>
+    <div class="proto-banner" role="note">{t.common.prototypeBanner} <span class="ph">Przykład</span></div>
+    <Header locale={locale} current={pageId} alternates={alternates} />
+    <main id="main">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+  </body>
+</html>
+
+<style>
+  .proto-banner { background: var(--c-graphite); color: rgb(255 255 255 / 0.85); font-size: var(--fs-xs); text-align: center; padding: 0.45rem var(--gutter); }
+</style>

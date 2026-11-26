@@ -1,0 +1,21 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import PageHero from '../components/PageHero.astro';
+import ServiceCards from '../components/ServiceCards.astro';
+import CtaBand from '../components/CtaBand.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+---
+<PageHero locale={locale} title={t.servicesPage.title} lead={t.servicesPage.lead} />
+<section class="section" style="padding-top: var(--s-5)">
+  <div class="container">
+    <ServiceCards locale={locale} />
+    <div class="notice" style="margin-top: var(--s-7); max-width: 48rem">
+      <h3>{t.servicesPage.boundariesTitle}</h3>
+      <ul class="crosslist">{t.servicesPage.boundaries.map((b) => <li>{b}</li>)}</ul>
+    </div>
+  </div>
+</section>
+<CtaBand locale={locale} />

@@ -1,0 +1,41 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { site } from '../config/site';
+import PageHero from '../components/PageHero.astro';
+import ContactForm from '../components/ContactForm.astro';
+import Icon from '../components/Icon.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const c = t.contactPage;
+---
+<PageHero locale={locale} title={c.title} lead={c.lead} />
+<section class="section" style="padding-top: var(--s-4)" id="formularz">
+  <div class="container contact">
+    <div class="card"><h2 class="visually-hidden">{t.form.title}</h2><ContactForm locale={locale} /></div>
+    <aside class="stack">
+      <div class="card card--soft">
+        <h3>{c.directTitle}</h3>
+        <ul class="direct">
+          <li><Icon name="mail" /> <span><strong>{c.emailLabel}</strong><br />{site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fragment set:html={rich(c.emailPlaceholder)} />}</span></li>
+          <li><Icon name="whatsapp" /> <span><strong>{c.whatsappLabel}</strong><br />{site.whatsapp ? <a href={`https://wa.me/${site.whatsapp}`} rel="noopener">+{site.whatsapp}</a> : <Fragment set:html={rich(c.whatsappPlaceholder)} />}</span></li>
+          <li><Icon name="instagram" /> <span><strong>{c.instagramLabel}</strong><br /><a href={site.instagram.url} target="_blank" rel="noopener">{site.instagram.handle}</a></span></li>
+        </ul>
+      </div>
+      <div class="card card--soft">
+        <h3>{c.areaTitle}</h3>
+        <p>{c.area}</p>
+        <p><strong>{t.common.consultationLanguages}</strong></p>
+      </div>
+    </aside>
+  </div>
+</section>
+<style>
+  .contact { display: grid; gap: var(--s-6); align-items: start; }
+  @media (min-width: 60rem) { .contact { grid-template-columns: 1.6fr 1fr; } }
+  .direct { list-style: none; padding: 0; margin: 0; }
+  .direct li { display: flex; gap: var(--s-3); align-items: flex-start; }
+  .direct li + li { margin-top: var(--s-4); }
+  .direct :global(svg) { color: var(--c-brown); flex-shrink: 0; margin-top: 0.2rem; }
+</style>

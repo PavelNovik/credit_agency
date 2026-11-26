@@ -1,0 +1,39 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import { href } from '../i18n/routes';
+import type { Post } from '../lib/blog';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+interface Props { locale: Locale; post: Post }
+const { locale, post } = Astro.props;
+const t = getDictionary(locale);
+const { Content } = post;
+const ld = {
+  '@context': 'https://schema.org', '@type': 'Article', headline: post.title, description: post.description,
+  datePublished: post.date, inLanguage: locale, author: { '@type': 'Person', name: 'Olena Vagner' },
+};
+const fmt = new Intl.DateTimeFormat(locale, { dateStyle: 'long' }).format(new Date(post.date));
+---
+<PageHero locale={locale} title={post.title} lead={post.description} crumbs={[{ label: t.blogPage.title, url: href('blog', locale) }]}>
+  <p class="post-meta"><span class="chip">{t.blogPage.categories[post.category]}</span> <time datetime={post.date}>{fmt}</time> · {post.readingMinutes} {t.common.minutes}</p>
+</PageHero>
+<script type="application/ld+json" set:html={JSON.stringify(ld)} />
+<section class="section" style="padding-top: var(--s-4)">
+  <article class="container--narrow prose">
+    <Content />
+    <p class="post-disclaimer">{t.blogPage.disclaimer}</p>
+    {post.service && (
+      <div class="notice related">
+        <p><strong>{t.blogPage.related}:</strong> <a href={href(post.service, locale)}>{t.services[post.service].title}</a></p>
+      </div>
+    )}
+    <p><a class="link-arrow back" href={href('blog', locale)}>{t.blogPage.back}</a></p>
+  </article>
+</section>
+<CtaBand locale={locale} />
+<style>
+  .post-meta { display: flex; flex-wrap: wrap; gap: var(--s-3); align-items: center; color: var(--c-muted); font-size: var(--fs-sm); margin-top: var(--s-4); }
+  .post-disclaimer { margin-top: var(--s-7); font-size: var(--fs-sm); color: var(--c-muted); font-style: italic; }
+  .related { margin: var(--s-5) 0; }
+</style>

@@ -1,0 +1,25 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+interface Props { locale: Locale }
+const t = getDictionary(Astro.props.locale);
+---
+<ol class="steps">
+  {t.steps.map((s, i) => (
+    <li class="steps__item">
+      <span class="steps__num" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+      <h3>{s.title}</h3>
+      <p>{s.text}</p>
+    </li>
+  ))}
+</ol>
+<style>
+  .steps { list-style: none; padding: 0; margin: 0; display: grid; gap: var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); counter-reset: step; }
+  .steps__item { margin: 0; padding-top: var(--s-5); border-top: 2px solid var(--c-caramel); }
+  .steps__num { display: block; font-family: var(--font-serif); font-size: var(--fs-2xl); color: var(--c-brown); line-height: 1; margin-bottom: var(--s-4); }
+  .steps h3 { font-size: var(--fs-lg); margin-bottom: var(--s-2); }
+  .steps p { color: var(--c-muted); margin: 0; }
+  :global(.section--dark) .steps__item { border-top-color: var(--c-caramel); }
+  :global(.section--dark) .steps__num { color: var(--c-caramel-light); }
+  :global(.section--dark) .steps p { color: rgb(255 255 255 / 0.82); }
+</style>

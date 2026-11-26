@@ -1,0 +1,24 @@
+---
+import { rich } from '../i18n';
+interface Props { items: { q: string; a: string }[] }
+const { items } = Astro.props;
+const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map((i) => ({ '@type': 'Question', name: i.q, acceptedAnswer: { '@type': 'Answer', text: i.a.replace(/\[\[|\]\]/g, '') } })) };
+---
+<div class="faq">
+  {items.map((i) => (
+    <details class="faq__item">
+      <summary>{i.q}</summary>
+      <p set:html={rich(i.a)} />
+    </details>
+  ))}
+</div>
+<script type="application/ld+json" set:html={JSON.stringify(ld)} />
+<style>
+  .faq { border-top: 1px solid var(--c-line); }
+  .faq__item { border-bottom: 1px solid var(--c-line); }
+  .faq__item summary { list-style: none; cursor: pointer; padding: var(--s-5) 2.5rem var(--s-5) 0; position: relative; font-weight: 600; font-size: var(--fs-lg); }
+  .faq__item summary::-webkit-details-marker { display: none; }
+  .faq__item summary::after { content: '+'; position: absolute; right: 0.25rem; top: 50%; translate: 0 -50%; width: 2rem; height: 2rem; border-radius: 50%; display: grid; place-items: center; background: var(--c-sand); color: var(--c-brown-dark); font-weight: 400; font-size: 1.25rem; transition: rotate 0.2s var(--ease); }
+  .faq__item[open] summary::after { rotate: 45deg; }
+  .faq__item p { color: var(--c-muted); padding-right: 2.5rem; margin-bottom: var(--s-5); }
+</style>

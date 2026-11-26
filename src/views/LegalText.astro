@@ -1,0 +1,16 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import PageHero from '../components/PageHero.astro';
+interface Props { locale: Locale; id: 'privacy' | 'cookies' | 'legal' }
+const { locale, id } = Astro.props;
+const t = getDictionary(locale);
+const page = { privacy: t.privacyPage, cookies: t.cookiesPage, legal: t.legalPage }[id];
+---
+<PageHero locale={locale} title={page.title} />
+<section class="section" style="padding-top: var(--s-4)">
+  <div class="container--narrow prose">
+    {'draftNote' in page && <div class="notice"><p set:html={rich(`[[${page.draftNote}]]`)} /></div>}
+    {page.sections.map((s) => (<><h2>{s.h}</h2><p set:html={rich(s.p)} /></>))}
+  </div>
+</section>

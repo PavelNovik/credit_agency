@@ -1,0 +1,64 @@
+---
+/**
+ * Единый маршрут для всех языков и страниц.
+ * Адреса берутся из src/i18n/routes.ts, тексты из src/i18n/dictionaries.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { enabledLocales, type Locale } from '../i18n/config';
+import { pageIds, pagePath, href, blogPostHref, type PageId } from '../i18n/routes';
+import { getDictionary } from '../i18n';
+import { allPosts, translationsOf, type Post } from '../lib/blog';
+import Home from '../views/Home.astro';
+import Services from '../views/Services.astro';
+import Service from '../views/Service.astro';
+import Process from '../views/Process.astro';
+import About from '../views/About.astro';
+import Faq from '../views/Faq.astro';
+import Contact from '../views/Contact.astro';
+import Blog from '../views/Blog.astro';
+import BlogPost from '../views/BlogPost.astro';
+import LegalText from '../views/LegalText.astro';
+
+type Props = { locale: Locale; pageId: PageId; post?: Post };
+
+export function getStaticPaths() {
+  const toParam = (p: string) => (p === '' ? undefined : p.replace(/\/$/, ''));
+  const pages = enabledLocales.flatMap((locale) =>
+    pageIds.map((pageId) => ({ params: { path: toParam(pagePath(pageId, locale)) }, props: { locale, pageId } })),
+  );
+  const posts = allPosts
+    .filter((p) => !p.draft && enabledLocales.includes(p.locale))
+    .map((post) => ({
+      params: { path: toParam(blogPostHref(post.locale, post.slug).slice(1)) },
+      props: { locale: post.locale, pageId: 'blog' as PageId, post },
+    }));
+  return [...pages, ...posts];
+}
+
+const { locale, pageId, post } = Astro.props;
+const t = getDictionary(locale);
+
+const seoByPage: Record<PageId, { title: string; description: string }> = {
+  home: t.home.seo, services: t.servicesPage.seo, mortgage: t.mortgage.seo, purchase: t.purchase.seo,
+  language: t.language.seo, search: t.search.seo, process: t.processPage.seo, about: t.aboutPage.seo,
+  blog: t.blogPage.seo, faq: t.faqPage.seo, contact: t.contactPage.seo, privacy: t.privacyPage.seo,
+  cookies: t.cookiesPage.seo, legal: t.legalPage.seo,
+};
+const seo = post ? { title: `${post.title} | Olena Vagner`, description: post.description } : seoByPage[pageId];
+
+const alternates: Partial<Record<Locale, string>> = post
+  ? Object.fromEntries(translationsOf(post).filter((p) => enabledLocales.includes(p.locale)).map((p) => [p.locale, blogPostHref(p.locale, p.slug)]))
+  : Object.fromEntries(enabledLocales.map((l) => [l, href(pageId, l)]));
+---
+<BaseLayout locale={locale} pageId={pageId} title={seo.title} description={seo.description} alternates={alternates} ogType={post ? 'article' : 'website'}>
+  {post ? <BlogPost locale={locale} post={post} />
+    : pageId === 'home' ? <Home locale={locale} />
+    : pageId === 'services' ? <Services locale={locale} />
+    : (pageId === 'mortgage' || pageId === 'purchase' || pageId === 'language' || pageId === 'search') ? <Service locale={locale} id={pageId} />
+    : pageId === 'process' ? <Process locale={locale} />
+    : pageId === 'about' ? <About locale={locale} />
+    : pageId === 'faq' ? <Faq locale={locale} />
+    : pageId === 'contact' ? <Contact locale={locale} />
+    : pageId === 'blog' ? <Blog locale={locale} />
+    : <LegalText locale={locale} id={pageId as 'privacy' | 'cookies' | 'legal'} />}
+</BaseLayout>

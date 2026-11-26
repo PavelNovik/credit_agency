@@ -1,0 +1,75 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { href } from '../i18n/routes';
+import { site } from '../config/site';
+import Icon from './Icon.astro';
+
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const year = new Date().getFullYear();
+---
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <p class="footer__name">{site.brand}</p>
+      <p class="footer__about">{t.footer.about}</p>
+      <p class="footer__meta"><Icon name="pin" size={18} /> {t.common.location}</p>
+      <p class="footer__meta"><Icon name="globe" size={18} /> {t.common.consultationLanguages}</p>
+    </div>
+    <div>
+      <p class="footer__title">{t.footer.servicesTitle}</p>
+      <ul>
+        <li><a href={href('mortgage', locale)}>{t.services.mortgage.title}</a></li>
+        <li><a href={href('purchase', locale)}>{t.services.purchase.title}</a></li>
+        <li><a href={href('language', locale)}>{t.services.language.title}</a></li>
+        <li><a href={href('search', locale)}>{t.services.search.title}</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer__title">{t.footer.navTitle}</p>
+      <ul>
+        <li><a href={href('process', locale)}>{t.nav.process}</a></li>
+        <li><a href={href('about', locale)}>{t.nav.about}</a></li>
+        <li><a href={href('blog', locale)}>{t.nav.blog}</a></li>
+        <li><a href={href('faq', locale)}>{t.nav.faq}</a></li>
+        <li><a href={href('contact', locale)}>{t.nav.contact}</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer__title">{t.footer.contactTitle}</p>
+      <ul>
+        <li>{site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <Fragment set:html={rich(t.contactPage.emailPlaceholder)} />}</li>
+        <li>{site.whatsapp ? <a href={`https://wa.me/${site.whatsapp}`} rel="noopener">WhatsApp</a> : <Fragment set:html={rich(t.contactPage.whatsappPlaceholder)} />}</li>
+        <li><a href={site.instagram.url} rel="noopener" target="_blank">Instagram {site.instagram.handle}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container footer__bottom">
+    <p class="footer__disclaimer">{t.footer.disclaimer}</p>
+    <div class="footer__legal">
+      <span>© {year} {site.name}. {t.footer.rights}</span>
+      <a href={href('privacy', locale)}>{t.privacyPage.title}</a>
+      <a href={href('cookies', locale)}>{t.cookiesPage.title}</a>
+      <a href={href('legal', locale)}>{t.legalPage.title}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer { background: var(--c-graphite); color: rgb(255 255 255 / 0.78); padding-block: var(--s-8) var(--s-6); font-size: var(--fs-sm); }
+  .footer a { color: rgb(255 255 255 / 0.9); text-decoration: none; }
+  .footer a:hover { color: var(--c-caramel); text-decoration: underline; }
+  .footer ul { list-style: none; padding: 0; margin: 0; }
+  .footer :global(.ph) { color: var(--c-graphite); }
+  .footer__grid { display: grid; gap: var(--s-6); grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr)); }
+  @media (min-width: 64rem) { .footer__grid { grid-template-columns: 1.6fr 1fr 1fr 1fr; } }
+  .footer__name { font-family: var(--font-serif); font-size: 1.5rem; color: var(--c-white); margin-bottom: var(--s-3); }
+  .footer__about { max-width: 22rem; }
+  .footer__meta { display: flex; gap: var(--s-2); align-items: center; margin-bottom: var(--s-2); color: var(--c-caramel-light); }
+  .footer__title { color: var(--c-white); font-weight: 700; font-size: var(--fs-xs); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: var(--s-4); }
+  .footer__bottom { margin-top: var(--s-7); padding-top: var(--s-5); border-top: 1px solid rgb(255 255 255 / 0.14); }
+  .footer__disclaimer { font-size: var(--fs-xs); color: rgb(255 255 255 / 0.6); max-width: 48rem; }
+  .footer__legal { display: flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); font-size: var(--fs-xs); }
+</style>

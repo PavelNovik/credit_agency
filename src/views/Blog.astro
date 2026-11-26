@@ -1,0 +1,67 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import { blogPostHref } from '../i18n/routes';
+import { postsFor } from '../lib/blog';
+import PageHero from '../components/PageHero.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const b = t.blogPage;
+const published = postsFor(locale);
+const upcoming = postsFor(locale, { includeDrafts: true }).filter((p) => p.draft);
+const cats = Object.entries(b.categories) as [keyof typeof b.categories, string][];
+---
+<PageHero locale={locale} title={b.title} lead={b.lead} />
+<section class="section" style="padding-top: var(--s-4)">
+  <div class="container">
+    <div class="filters" role="group" aria-label={b.title} data-filters>
+      <button type="button" class="filter is-active" data-cat="" aria-pressed="true">{b.all}</button>
+      {cats.map(([k, l]) => <button type="button" class="filter" data-cat={k} aria-pressed="false">{l}</button>)}
+    </div>
+    <div class="grid grid--3" data-posts>
+      {published.map((p) => (
+        <article class="card card--link" data-cat={p.category}>
+          <span class="chip">{b.categories[p.category]}</span>
+          <h2 class="post-title">{p.title}</h2>
+          <p>{p.description}</p>
+          <p class="post-meta">{p.readingMinutes} {t.common.minutes}</p>
+          <a class="link-arrow" href={blogPostHref(locale, p.slug)}>{t.common.readArticle}<span class="visually-hidden">: {p.title}</span></a>
+        </article>
+      ))}
+    </div>
+
+    {upcoming.length > 0 && (
+      <div class="upcoming">
+        <h2>{b.upcomingTitle}</h2>
+        <ul>
+          {upcoming.map((p) => <li data-cat={p.category}><span class="chip">{b.categories[p.category]}</span> {p.title}</li>)}
+        </ul>
+      </div>
+    )}
+  </div>
+</section>
+<script>
+  const wrap = document.querySelector('[data-filters]');
+  wrap?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-cat]');
+    if (!btn) return;
+    const cat = btn.dataset.cat;
+    wrap.querySelectorAll('button').forEach((b) => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
+    document.querySelectorAll<HTMLElement>('[data-posts] [data-cat], .upcoming li[data-cat]').forEach((el) => {
+      el.hidden = Boolean(cat) && el.dataset.cat !== cat;
+    });
+  });
+</script>
+<style>
+  .filters { display: flex; flex-wrap: wrap; gap: var(--s-2); margin-bottom: var(--s-6); }
+  .filter { font: 600 var(--fs-sm)/1 var(--font-sans); padding: 0.65rem 1.1rem; border-radius: var(--r-pill); border: 1.5px solid var(--c-line); background: var(--c-white); color: var(--c-graphite); cursor: pointer; }
+  .filter:hover { border-color: var(--c-caramel); }
+  .filter.is-active { background: var(--c-graphite); color: var(--c-white); border-color: var(--c-graphite); }
+  .post-title { font-size: var(--fs-lg); margin: var(--s-4) 0 var(--s-3); }
+  .post-meta { font-size: var(--fs-xs); }
+  .upcoming { margin-top: var(--s-8); }
+  .upcoming h2 { font-size: var(--fs-xl); }
+  .upcoming ul { list-style: none; padding: 0; border-top: 1px solid var(--c-line); }
+  .upcoming li { margin: 0; padding: var(--s-4) 0; border-bottom: 1px solid var(--c-line); display: flex; gap: var(--s-3); align-items: baseline; flex-wrap: wrap; color: var(--c-muted); }
+</style>

@@ -1,0 +1,269 @@
+---
+/**
+ * Форма заявки. Сервера пока нет: после проверки полей форма собирает текст
+ * и предлагает отправить его через почтовый клиент (mailto:) или WhatsApp (wa.me).
+ * Ничего не отправляется автоматически и нигде не сохраняется.
+ * Подключение сервера/CRM — см. docs/PRZED-PUBLIKACJA.md (шаг 4 плана).
+ */
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { href } from '../i18n/routes';
+import { site } from '../config/site';
+
+interface Props { locale: Locale; preset?: string }
+const { locale, preset } = Astro.props;
+const t = getDictionary(locale);
+const f = t.form;
+const config = {
+  email: site.email,
+  whatsapp: site.whatsapp,
+  errors: f.errors,
+  labels: {
+    name: f.name, email: f.email, phone: f.phone, preferredLanguage: f.preferredLanguage, service: f.service,
+    city: f.city, message: f.message, contactMethod: f.contactMethod, propertyStatus: f.propertyStatus, agencyContact: f.agencyContact,
+  },
+  template: f.messageTemplate,
+};
+const consentHtml = rich(f.consent, href('privacy', locale));
+---
+<form class="form" novalidate data-contact-form data-config={JSON.stringify(config)}>
+  <div class="form__errors" role="alert" tabindex="-1" hidden data-error-summary>{f.errors.summary}</div>
+
+  <div class="form__grid">
+    <div class="field">
+      <label for="cf-name">{f.name} <span class="req" aria-hidden="true">*</span></label>
+      <input id="cf-name" name="name" type="text" autocomplete="given-name" required maxlength="80" aria-describedby="cf-name-err" />
+      <p class="field__error" id="cf-name-err" hidden></p>
+    </div>
+    <div class="field">
+      <label for="cf-email">{f.email} <span class="req" aria-hidden="true">*</span></label>
+      <input id="cf-email" name="email" type="email" autocomplete="email" required maxlength="120" aria-describedby="cf-email-err" />
+      <p class="field__error" id="cf-email-err" hidden></p>
+    </div>
+    <div class="field">
+      <label for="cf-phone">{f.phone} <span class="opt">({f.optional})</span></label>
+      <input id="cf-phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="25" aria-describedby="cf-phone-err" />
+      <p class="field__error" id="cf-phone-err" hidden></p>
+    </div>
+    <div class="field">
+      <label for="cf-city">{f.city} <span class="opt">({f.optional})</span></label>
+      <input id="cf-city" name="city" type="text" autocomplete="address-level2" maxlength="80" />
+    </div>
+    <div class="field">
+      <label for="cf-service">{f.service} <span class="req" aria-hidden="true">*</span></label>
+      <select id="cf-service" name="service" required aria-describedby="cf-service-err">
+        <option value="">{f.select}</option>
+        {Object.entries(f.serviceOptions).map(([v, l]) => <option value={v} selected={preset === v}>{l}</option>)}
+      </select>
+      <p class="field__error" id="cf-service-err" hidden></p>
+    </div>
+    <div class="field">
+      <label for="cf-lang">{f.preferredLanguage}</label>
+      <select id="cf-lang" name="preferredLanguage">
+        {Object.entries(f.languageOptions).map(([v, l]) => <option value={v} selected={v === locale}>{l}</option>)}
+      </select>
+    </div>
+  </div>
+
+  <fieldset class="field field--choices">
+    <legend>{f.propertyStatus}</legend>
+    <div class="choices">
+      {Object.entries(f.propertyOptions).map(([v, l]) => (
+        <label class="choice"><input type="radio" name="propertyStatus" value={v} /> <span>{l}</span></label>
+      ))}
+    </div>
+  </fieldset>
+
+  <fieldset class="field field--choices">
+    <legend>{f.agencyContact}</legend>
+    <div class="choices">
+      {Object.entries(f.agencyOptions).map(([v, l]) => (
+        <label class="choice"><input type="radio" name="agencyContact" value={v} /> <span>{l}</span></label>
+      ))}
+    </div>
+  </fieldset>
+
+  <div class="field">
+    <label for="cf-message">{f.message} <span class="req" aria-hidden="true">*</span></label>
+    <textarea id="cf-message" name="message" rows="5" required maxlength="1500" aria-describedby="cf-message-hint cf-message-err"></textarea>
+    <p class="field__hint" id="cf-message-hint">{f.messageHint}</p>
+    <p class="field__error" id="cf-message-err" hidden></p>
+  </div>
+
+  <fieldset class="field field--choices">
+    <legend>{f.contactMethod}</legend>
+    <div class="choices">
+      {Object.entries(f.contactOptions).map(([v, l], i) => (
+        <label class="choice"><input type="radio" name="contactMethod" value={v} checked={i === 0} /> <span>{l}</span></label>
+      ))}
+    </div>
+  </fieldset>
+
+  <!-- Защита от спама: поле-ловушка, невидимое для людей -->
+  <div class="hp" aria-hidden="true">
+    <label for="cf-website">Website</label>
+    <input id="cf-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+  </div>
+
+  <div class="field">
+    <label class="choice choice--consent">
+      <input type="checkbox" name="consent" required aria-describedby="cf-consent-err" />
+      <span set:html={consentHtml} />
+    </label>
+    <p class="field__error" id="cf-consent-err" hidden></p>
+    <p class="field__hint" set:html={rich(f.privacyNote)} />
+  </div>
+
+  <button class="btn btn--primary" type="submit">{f.submit}</button>
+</form>
+
+<div class="form-ready card" hidden tabindex="-1" data-ready>
+  <h3>{f.ready.title}</h3>
+  <p>{f.ready.text}</p>
+  <div class="btn-row">
+    <a class="btn btn--primary" data-send-email href="#">{f.ready.email}</a>
+    <a class="btn btn--secondary" data-send-whatsapp href="#" target="_blank" rel="noopener">{f.ready.whatsapp}</a>
+  </div>
+  <p class="field__hint" data-missing hidden set:html={rich(`[[${f.ready.missingContact}]]`)} />
+  <pre class="form-ready__preview" data-preview></pre>
+  <button class="btn btn--ghost" type="button" data-edit>← {f.ready.edit}</button>
+</div>
+
+<script>
+  type Cfg = {
+    email: string | null; whatsapp: string | null;
+    errors: Record<string, string>; labels: Record<string, string>;
+    template: { greeting: string; subject: string };
+  };
+  document.querySelectorAll<HTMLFormElement>('[data-contact-form]').forEach((form) => {
+    const cfg: Cfg = JSON.parse(form.dataset.config!);
+    const ready = form.nextElementSibling as HTMLElement;
+    const summary = form.querySelector<HTMLElement>('[data-error-summary]')!;
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const phoneRe = /^[+()\d\s-]{7,25}$/;
+
+    const setError = (name: string, msg: string | null) => {
+      const field = form.elements.namedItem(name) as HTMLInputElement | null;
+      const err = form.querySelector<HTMLElement>(`#cf-${name}-err`);
+      if (field && 'setAttribute' in field) field.setAttribute('aria-invalid', msg ? 'true' : 'false');
+      if (err) { err.textContent = msg ?? ''; err.hidden = !msg; }
+    };
+
+    const validate = () => {
+      const d = new FormData(form);
+      const v = (k: string) => String(d.get(k) ?? '').trim();
+      const errors: Record<string, string | null> = {
+        name: v('name').length >= 2 ? null : cfg.errors.name,
+        email: emailRe.test(v('email')) ? null : cfg.errors.email,
+        phone: !v('phone') || phoneRe.test(v('phone')) ? null
+          : cfg.errors.phone,
+        service: v('service') ? null : cfg.errors.service,
+        message: v('message').length >= 10 ? null : cfg.errors.message,
+        consent: d.get('consent') ? null : cfg.errors.consent,
+      };
+      const method = v('contactMethod');
+      if (!errors.phone && (method === 'phone' || method === 'whatsapp') && !v('phone')) errors.phone = cfg.errors.phoneRequired;
+      Object.entries(errors).forEach(([k, m]) => setError(k, m));
+      return { ok: Object.values(errors).every((m) => !m), d, v };
+    };
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const { ok, v } = validate();
+      if (!ok) {
+        summary.hidden = false;
+        summary.focus();
+        form.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+        return;
+      }
+      summary.hidden = true;
+      if (v('website')) return; // бот заполнил ловушку — молча игнорируем
+
+      const label = (name: string) => {
+        const el = form.querySelector<HTMLInputElement | HTMLSelectElement>(`[name="${name}"]:checked, select[name="${name}"]`);
+        if (!el) return '';
+        if (el instanceof HTMLSelectElement) return el.value ? el.selectedOptions[0].textContent!.trim() : '';
+        return el.closest('label')?.textContent?.trim() ?? '';
+      };
+      const opt = (cond: string, line: string) => (cond ? line : null);
+      const kv = (lbl: string, val: string) => `${lbl}${/[?:]$/.test(lbl) ? ' ' : ': '}${val}`;
+      const lines = [
+        cfg.template.greeting, '',
+        `${cfg.labels.name}: ${v('name')}`,
+        `${cfg.labels.email}: ${v('email')}`,
+        opt(v('phone'), `${cfg.labels.phone}: ${v('phone')}`),
+        opt(v('city'), `${cfg.labels.city}: ${v('city')}`),
+        kv(cfg.labels.service, label('service')),
+        kv(cfg.labels.preferredLanguage, label('preferredLanguage')),
+        opt(label('propertyStatus'), kv(cfg.labels.propertyStatus, label('propertyStatus'))),
+        opt(label('agencyContact'), kv(cfg.labels.agencyContact, label('agencyContact'))),
+        kv(cfg.labels.contactMethod, label('contactMethod')),
+        '', `${cfg.labels.message}:`, v('message'),
+      ].filter((l): l is string => l !== null);
+      const body = lines.join('\n');
+
+      const emailBtn = ready.querySelector<HTMLAnchorElement>('[data-send-email]')!;
+      const waBtn = ready.querySelector<HTMLAnchorElement>('[data-send-whatsapp]')!;
+      const missing = ready.querySelector<HTMLElement>('[data-missing]')!;
+      const subject = `${cfg.template.subject}: ${label('service')}`;
+      const toggle = (a: HTMLAnchorElement, url: string | null) => {
+        if (url) { a.href = url; a.removeAttribute('aria-disabled'); }
+        else { a.removeAttribute('href'); a.setAttribute('aria-disabled', 'true'); }
+      };
+      toggle(emailBtn, cfg.email ? `mailto:${cfg.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}` : null);
+      toggle(waBtn, cfg.whatsapp ? `https://wa.me/${cfg.whatsapp}?text=${encodeURIComponent(body)}` : null);
+      missing.hidden = Boolean(cfg.email && cfg.whatsapp);
+      ready.querySelector('[data-preview]')!.textContent = body;
+
+      form.hidden = true;
+      ready.hidden = false;
+      ready.focus();
+    });
+
+    form.addEventListener('input', (e) => {
+      const el = e.target as HTMLInputElement;
+      if (el.getAttribute('aria-invalid') === 'true') setError(el.name, null);
+    });
+
+    ready.querySelector('[data-edit]')!.addEventListener('click', () => {
+      ready.hidden = true;
+      form.hidden = false;
+      form.querySelector<HTMLElement>('input, select, textarea')?.focus();
+    });
+  });
+</script>
+
+<style>
+  .form { display: grid; gap: var(--s-5); }
+  .form__grid { display: grid; gap: var(--s-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+  .field { display: grid; gap: var(--s-2); margin: 0; min-width: 0; }
+  fieldset.field { border: 0; padding: 0; }
+  .field label, .field legend { font-weight: 600; font-size: var(--fs-sm); padding: 0; }
+  .field legend { margin-bottom: var(--s-2); }
+  .req { color: var(--c-brown); }
+  .opt { color: var(--c-muted); font-weight: 400; }
+  .field input[type='text'], .field input[type='email'], .field input[type='tel'], .field select, .field textarea {
+    width: 100%; font: inherit; font-size: 1rem; color: var(--c-graphite);
+    background: var(--c-white); border: 1.5px solid var(--c-line); border-radius: var(--r-md);
+    padding: 0.8rem 1rem; min-height: 3rem; transition: border-color 0.2s;
+  }
+  .field select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23876543' stroke-width='2'%3E%3Cpath d='m5 8 5 5 5-5'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.9rem center; background-size: 1.1rem; padding-right: 2.5rem; }
+  .field textarea { resize: vertical; min-height: 8rem; }
+  .field input:hover, .field select:hover, .field textarea:hover { border-color: var(--c-caramel); }
+  .field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { border-color: var(--c-brown); box-shadow: 0 0 0 3px rgb(135 101 67 / 0.2); border-radius: var(--r-md); }
+  .field [aria-invalid='true'] { border-color: var(--c-error) !important; }
+  .field__error { color: var(--c-error); font-size: var(--fs-sm); margin: 0; font-weight: 600; }
+  .field__hint { color: var(--c-muted); font-size: var(--fs-xs); margin: 0; }
+  .choices { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+  .choice { display: inline-flex; align-items: center; gap: var(--s-2); font-weight: 500 !important; cursor: pointer; }
+  .field--choices .choice { padding: 0.55rem 1rem; border: 1.5px solid var(--c-line); border-radius: var(--r-pill); background: var(--c-white); }
+  .field--choices .choice:has(input:checked) { border-color: var(--c-brown); background: var(--c-caramel-light); }
+  .choice input { accent-color: var(--c-brown); width: 1.1rem; height: 1.1rem; margin: 0; flex-shrink: 0; }
+  .choice--consent { align-items: flex-start; font-size: var(--fs-sm); }
+  .choice--consent input { margin-top: 0.2rem; }
+  .form__errors { background: #f8e4e0; color: var(--c-error); border-radius: var(--r-md); padding: var(--s-3) var(--s-4); font-weight: 600; }
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+  .form-ready { gap: var(--s-4); }
+  .form-ready__preview { white-space: pre-wrap; font: inherit; font-size: var(--fs-sm); background: var(--c-sand); border-radius: var(--r-md); padding: var(--s-4); margin: 0; color: var(--c-muted); max-height: 16rem; overflow: auto; }
+  .form-ready .btn--ghost { justify-self: start; align-self: flex-start; }
+</style>

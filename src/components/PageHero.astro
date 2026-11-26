@@ -1,0 +1,32 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { href } from '../i18n/routes';
+
+interface Props { locale: Locale; title: string; lead?: string; eyebrow?: string; crumbs?: { label: string; url?: string }[] }
+const { locale, title, lead, eyebrow, crumbs = [] } = Astro.props;
+const t = getDictionary(locale);
+const all = [{ label: t.common.breadcrumbHome, url: href('home', locale) }, ...crumbs];
+const site = Astro.site!;
+const ld = {
+  '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+  itemListElement: [...all, { label: title, url: Astro.url.pathname }].map((c, i) => ({
+    '@type': 'ListItem', position: i + 1, name: c.label, item: c.url ? new URL(c.url, site).href : undefined,
+  })),
+};
+---
+<section class="page-hero">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <ol>
+        {all.map((c) => <li><a href={c.url}>{c.label}</a></li>)}
+        <li aria-current="page">{title}</li>
+      </ol>
+    </nav>
+    {eyebrow && <span class="eyebrow">{eyebrow}</span>}
+    <h1>{title}</h1>
+    {lead && <p class="lead" set:html={rich(lead)} />}
+    <slot />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(ld)} />
+</section>

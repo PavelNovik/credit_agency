@@ -1,0 +1,26 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import { href } from '../i18n/routes';
+import Icon from './Icon.astro';
+
+interface Props { locale: Locale; exclude?: string }
+const { locale, exclude } = Astro.props;
+const t = getDictionary(locale);
+const items = [
+  { id: 'mortgage', icon: 'key' },
+  { id: 'purchase', icon: 'home' },
+  { id: 'language', icon: 'chat' },
+  { id: 'search', icon: 'search' },
+] as const;
+---
+<div class="grid grid--4">
+  {items.filter((i) => i.id !== exclude).map((i) => (
+    <article class="card card--link">
+      <div class="card__icon"><Icon name={i.icon} /></div>
+      <h3>{t.services[i.id].title}</h3>
+      <p>{t.services[i.id].short}</p>
+      <a class="link-arrow" href={href(i.id, locale)}>{t.common.learnMore}<span class="visually-hidden">: {t.services[i.id].title}</span></a>
+    </article>
+  ))}
+</div>

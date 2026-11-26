@@ -1,0 +1,15 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import PageHero from '../components/PageHero.astro';
+import FaqList from '../components/FaqList.astro';
+import CtaBand from '../components/CtaBand.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+---
+<PageHero locale={locale} title={t.faqPage.title} lead={t.faqPage.lead} />
+<section class="section" style="padding-top: var(--s-4)">
+  <div class="container--narrow"><FaqList items={t.faq} /></div>
+</section>
+<CtaBand locale={locale} />

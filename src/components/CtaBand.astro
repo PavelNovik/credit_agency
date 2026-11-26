@@ -1,0 +1,23 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+import { href } from '../i18n/routes';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+---
+<section class="section section--dark cta-band">
+  <div class="container cta-band__inner">
+    <div>
+      <h2>{t.home.contact.title}</h2>
+      <p>{t.home.contact.lead}</p>
+    </div>
+    <a class="btn btn--light" href={`${href('contact', locale)}#formularz`}>{t.nav.cta}</a>
+  </div>
+</section>
+<style>
+  .cta-band { padding-block: var(--s-8); }
+  .cta-band__inner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s-5); }
+  .cta-band h2 { margin-bottom: var(--s-2); }
+  .cta-band p { margin: 0; color: rgb(255 255 255 / 0.85); max-width: 36rem; }
+</style>

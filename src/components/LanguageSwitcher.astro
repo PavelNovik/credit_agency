@@ -1,0 +1,31 @@
+---
+import { locales, type Locale } from '../i18n/config';
+import { getDictionary } from '../i18n';
+
+interface Props { locale: Locale; alternates: Partial<Record<Locale, string>> }
+const { locale, alternates } = Astro.props;
+const t = getDictionary(locale);
+---
+<nav class="lang" aria-label={t.nav.language}>
+  <ul>
+    {locales.map((l) => {
+      const url = alternates[l.code];
+      if (l.code === locale) {
+        return <li><span class="lang__item is-current" aria-current="true" lang={l.htmlLang} title={l.name}>{l.label}</span></li>;
+      }
+      if (l.enabled && url) {
+        return <li><a class="lang__item" href={url} hreflang={l.htmlLang} lang={l.htmlLang} title={l.name} data-lang={l.code}>{l.label}</a></li>;
+      }
+      return <li><span class="lang__item is-disabled" aria-disabled="true" title={`${l.name} — ${t.nav.languageSoon}`}>{l.label}</span></li>;
+    })}
+  </ul>
+</nav>
+
+<style>
+  .lang ul { list-style: none; margin: 0; padding: 0.2rem; display: flex; gap: 0.1rem; background: var(--c-sand); border-radius: var(--r-pill); }
+  .lang li + li { margin: 0; }
+  .lang__item { display: grid; place-items: center; min-width: 2.25rem; height: 2rem; padding: 0 0.45rem; border-radius: var(--r-pill); font-size: var(--fs-xs); font-weight: 700; letter-spacing: 0.04em; color: var(--c-muted); text-decoration: none; }
+  a.lang__item:hover { background: var(--c-white); color: var(--c-graphite); }
+  .is-current { background: var(--c-white); color: var(--c-graphite); box-shadow: var(--shadow-sm); }
+  .is-disabled { opacity: 0.45; cursor: not-allowed; }
+</style>

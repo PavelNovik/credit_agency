@@ -1,0 +1,31 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import PageHero from '../components/PageHero.astro';
+import Steps from '../components/Steps.astro';
+import CtaBand from '../components/CtaBand.astro';
+interface Props { locale: Locale }
+const { locale } = Astro.props;
+const t = getDictionary(locale);
+const p = t.processPage;
+---
+<PageHero locale={locale} title={p.title} lead={p.lead} />
+<section class="section" style="padding-top: var(--s-5)">
+  <div class="container">
+    <Steps locale={locale} />
+    <p style="margin-top: var(--s-5); color: var(--c-muted)">{p.note}</p>
+  </div>
+</section>
+<section class="section section--sand">
+  <div class="container grid grid--2">
+    <div>
+      <h2>{p.transparencyTitle}</h2>
+      <ul class="checklist">{p.transparency.map((i) => <li>{i}</li>)}</ul>
+    </div>
+    <div class="card">
+      <h3>{p.firstContactTitle}</h3>
+      <p set:html={rich(p.firstContact)} />
+    </div>
+  </div>
+</section>
+<CtaBand locale={locale} />

@@ -1,0 +1,138 @@
+---
+import type { Locale } from '../i18n/config';
+import { getDictionary, rich } from '../i18n';
+import { href } from '../i18n/routes';
+import PageHero from '../components/PageHero.astro';
+import ServiceCards from '../components/ServiceCards.astro';
+import ContactForm from '../components/ContactForm.astro';
+
+interface Props { locale: Locale; id: 'mortgage' | 'purchase' | 'language' | 'search' }
+const { locale, id } = Astro.props;
+const t = getDictionary(locale);
+const s = t[id];
+const title = t.services[id].title;
+const crumbs = [{ label: t.nav.services, url: href('services', locale) }];
+const serviceLd = {
+  '@context': 'https://schema.org', '@type': 'Service', name: title, description: s.seo.description,
+  provider: { '@type': 'Person', name: 'Olena Vagner' }, areaServed: ['Poznań', 'Polska'],
+};
+---
+<PageHero locale={locale} title={title} lead={s.lead} crumbs={crumbs}>
+  <div class="btn-row" style="margin-top: var(--s-5)">
+    <a class="btn btn--primary" href="#formularz">{t.nav.cta}</a>
+  </div>
+</PageHero>
+<script type="application/ld+json" set:html={JSON.stringify(serviceLd)} />
+
+<section class="section" style="padding-top: var(--s-6)">
+  <div class="container service-grid">
+    <div class="stack">
+      <h2>{s.helpTitle}</h2>
+      <ul class="checklist">{s.help.map((i) => <li>{i}</li>)}</ul>
+
+      {id === 'mortgage' && (
+        <>
+          <h2 style="margin-top: var(--s-7)">{t.mortgage.roleTitle}</h2>
+          <p set:html={rich(t.mortgage.role)} />
+        </>
+      )}
+
+      {id === 'purchase' && (
+        <>
+          <h2 style="margin-top: var(--s-7)">{t.purchase.foundTitle}</h2>
+          <p>{t.purchase.found}</p>
+        </>
+      )}
+    </div>
+
+    <aside class="stack">
+      {id === 'mortgage' && (
+        <div class="card card--soft">
+          <h3>{t.mortgage.forWhomTitle}</h3>
+          <ul class="checklist">{t.mortgage.forWhom.map((i) => <li>{i}</li>)}</ul>
+        </div>
+      )}
+      {'notTitle' in s && (
+        <div class="notice">
+          <h3>{s.notTitle}</h3>
+          <ul class="crosslist">{s.not.map((i: string) => <li>{i}</li>)}</ul>
+        </div>
+      )}
+      {id === 'language' && (
+        <div class="notice">
+          <h3>{t.language.importantTitle}</h3>
+          <p>{t.language.important}</p>
+          <p><strong>{t.language.languagesNote}</strong></p>
+        </div>
+      )}
+    </aside>
+  </div>
+</section>
+
+{id === 'language' && (
+  <section class="section section--sand">
+    <div class="container">
+      <div class="section__head">
+        <h2>{t.language.formatsTitle}</h2>
+        <p>{t.language.formatsLead}</p>
+      </div>
+      <div class="grid grid--3">
+        {t.language.formats.map((f, i) => (
+          <div class="card">
+            <div class="card__num">{String(i + 1).padStart(2, '0')}</div>
+            <h3>{f.title}</h3>
+            <p>{f.text}</p>
+            <p class="price" set:html={rich(f.price)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+)}
+
+{id === 'search' && (
+  <section class="section section--sand">
+    <div class="container">
+      <div class="section__head">
+        <h2>{t.search.rolesTitle}</h2>
+        <p>{t.search.rolesLead}</p>
+      </div>
+      <div class="qa">
+        {t.search.roles.map((r) => (
+          <div class="qa__row">
+            <p class="qa__q">{r.q}</p>
+            <p class="qa__a" set:html={rich(r.a)} />
+          </div>
+        ))}
+      </div>
+      <p class="search-note">{t.search.note}</p>
+    </div>
+  </section>
+)}
+
+<section class="section" id="formularz">
+  <div class="container service-contact">
+    <div>
+      <h2>{t.home.contact.title}</h2>
+      <p class="lead">{t.home.contact.lead}</p>
+    </div>
+    <div class="card"><ContactForm locale={locale} preset={id} /></div>
+  </div>
+</section>
+
+<section class="section section--sand">
+  <div class="container">
+    <div class="section__head"><h2>{t.servicesPage.title}</h2></div>
+    <ServiceCards locale={locale} exclude={id} />
+  </div>
+</section>
+
+<style>
+  .service-grid { display: grid; gap: var(--s-7); }
+  @media (min-width: 56rem) { .service-grid { grid-template-columns: 1.4fr 1fr; align-items: start; } }
+  .service-grid h2 { font-size: var(--fs-xl); }
+  .price { margin-top: auto; padding-top: var(--s-3); font-weight: 600; color: var(--c-graphite) !important; }
+  .search-note { margin-top: var(--s-5); color: var(--c-muted); font-size: var(--fs-sm); }
+  .service-contact { display: grid; gap: var(--s-7); align-items: start; }
+  @media (min-width: 60rem) { .service-contact { grid-template-columns: 1fr 1.5fr; } }
+</style>
