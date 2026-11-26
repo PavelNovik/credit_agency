@@ -89,7 +89,7 @@ li + li { margin-top: var(--s-2); }
 .section { padding-block: var(--section-y); }
 .section--sand { background: var(--c-sand); }
 .section--dark { background: var(--c-brown); color: var(--c-white); }
-.section--dark a { color: var(--c-white); }
+.section--dark a:not(.btn) { color: var(--c-white); }
 .section__head { max-width: 40rem; margin-bottom: var(--s-7); }
 .section__head p { color: var(--c-muted); font-size: var(--fs-lg); }
 .section--dark .section__head p { color: rgb(255 255 255 / 0.85); }
